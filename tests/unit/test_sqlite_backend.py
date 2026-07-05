@@ -105,3 +105,126 @@ async def test_upsert_multiple_then_delete_by_overwrite(backend):
     print(f"texts after double upsert: {sorted(texts)}  count: {len(results)}")
     assert texts == {"a2", "b2", "c2"}
     assert len(results) == 3
+
+
+async def test_filter_eq_excludes_non_matches(backend):
+    "An $eq filter on a metadata key returns only matching chunks."
+    await backend.upsert(
+        ["old", "new"],
+        [VEC_A, VEC_A],
+        [
+            {"text": "old", "source": "old.pdf", "published_at": "2025-01-01"},
+            {"text": "new", "source": "new.pdf", "published_at": "2026-07-05"},
+        ],
+    )
+    results = await backend.search(
+        VEC_A, limit=10, filter={"published_at": {"$eq": "2026-07-05"}}
+    )
+    print(f"$eq filter results: {[r['text'] for r in results]}")
+    assert len(results) == 1
+    assert results[0]["source"] == "new.pdf"
+
+
+async def test_filter_gte_date_range(backend):
+    "A $gte date-range filter is the canonical 'last week' prefilter."
+    await backend.upsert(
+        ["a", "b", "c"],
+        [VEC_A, VEC_A, VEC_A],
+        [
+            {"text": "old", "source": "old.pdf", "published_at": "2025-01-01"},
+            {"text": "this_week", "source": "this.pdf", "published_at": "2026-07-01"},
+            {"text": "today", "source": "today.pdf", "published_at": "2026-07-05"},
+        ],
+    )
+    results = await backend.search(
+        VEC_A, limit=10, filter={"published_at": {"$gte": "2026-07-01"}}
+    )
+    texts = sorted(r["text"] for r in results)
+    print(f"$gte filter results: {texts}")
+    assert texts == ["this_week", "today"]
+
+
+async def test_filter_in_and_nin(backend):
+    "$in / $nin translate to SQL IN / NOT IN."
+    await backend.upsert(
+        ["a", "b", "c"],
+        [VEC_A, VEC_A, VEC_A],
+        [
+            {"text": "x", "source": "x.pdf", "kind": "news"},
+            {"text": "y", "source": "y.pdf", "kind": "blog"},
+            {"text": "z", "source": "z.pdf", "kind": "paper"},
+        ],
+    )
+    in_results = await backend.search(VEC_A, limit=10, filter={"kind": {"$in": ["news", "paper"]}})
+    in_texts = sorted(r["text"] for r in in_results)
+    print(f"$in results: {in_texts}")
+    assert in_texts == ["x", "z"]
+
+    nin_results = await backend.search(VEC_A, limit=10, filter={"kind": {"$nin": ["news"]}})
+    nin_texts = sorted(r["text"] for r in nin_results)
+    print(f"$nin results: {nin_texts}")
+    assert nin_texts == ["y", "z"]
+
+
+async def test_filter_combined_with_limit(backend):
+    "Filter narrows candidates before the limit is applied; if filter excludes all, result is empty."
+    await backend.upsert(
+        ["a", "b"],
+        [VEC_A, VEC_A],
+        [
+            {"text": "old", "source": "a.pdf", "published_at": "2020-01-01"},
+            {"text": "new", "source": "b.pdf", "published_at": "2026-07-01"},
+        ],
+    )
+    results = await backend.search(VEC_A, limit=1, filter={"published_at": {"$gte": "2026-01-01"}})
+    assert len(results) == 1
+    assert results[0]["text"] == "new"
+
+
+async def test_filter_no_matches_returns_empty(backend):
+    await backend.upsert(["a"], [VEC_A], [{"text": "x", "source": "a.pdf", "tag": "alpha"}])
+    results = await backend.search(VEC_A, limit=10, filter={"tag": {"$eq": "beta"}})
+    assert results == []
+
+
+async def test_update_payload_by_doc_id_rewrites_metadata_in_place(backend):
+    """Rewriting payload for a doc_id must update prefilter results without re-embedding."""
+    await backend.upsert(
+        ["a", "b", "c"],
+        [VEC_A, VEC_A, VEC_A],
+        [
+            {"text": "doc1-a", "source": "a.pdf", "doc_id": "doc-1", "author": "Alice"},
+            {"text": "doc1-b", "source": "a.pdf", "doc_id": "doc-1", "author": "Alice"},
+            {"text": "doc2-a", "source": "b.pdf", "doc_id": "doc-2", "author": "Alice"},
+        ],
+    )
+
+    # baseline: both docs match the existing author
+    before = await backend.search(VEC_A, limit=10, filter={"author": {"$eq": "Alice"}})
+    assert sorted(r["text"] for r in before) == ["doc1-a", "doc1-b", "doc2-a"]
+
+    await backend.update_payload_by_doc_id("doc-1", {"author": "Bob", "kind": "news"})
+
+    # doc-1 chunks now match Bob, doc-2 still matches Alice
+    bob_hits = await backend.search(VEC_A, limit=10, filter={"author": {"$eq": "Bob"}})
+    assert sorted(r["text"] for r in bob_hits) == ["doc1-a", "doc1-b"]
+
+    alice_hits = await backend.search(VEC_A, limit=10, filter={"author": {"$eq": "Alice"}})
+    assert sorted(r["text"] for r in alice_hits) == ["doc2-a"]
+
+    # the new field is queryable, and built-in payload keys are preserved
+    news_hits = await backend.search(VEC_A, limit=10, filter={"kind": {"$eq": "news"}})
+    assert sorted(r["text"] for r in news_hits) == ["doc1-a", "doc1-b"]
+    for hit in news_hits:
+        assert hit["source"] == "a.pdf"
+        assert hit["doc_id"] == "doc-1"
+
+
+async def test_update_payload_by_doc_id_is_noop_for_missing_doc(backend):
+    """An unknown doc_id must not raise or touch other chunks."""
+    await backend.upsert(
+        ["a"], [VEC_A], [{"text": "x", "source": "a.pdf", "doc_id": "doc-1", "k": "v"}]
+    )
+    await backend.update_payload_by_doc_id("doc-missing", {"k": "changed"})
+    results = await backend.search(VEC_A, limit=10)
+    assert results[0]["k"] == "v"

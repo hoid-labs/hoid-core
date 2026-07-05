@@ -12,6 +12,8 @@ from llm_framework.core.observability import RAGEvent
 from llm_framework.core.protocols import EmbeddingClientProtocol
 
 from ._converter import to_markdown
+from ._filter import FilterValidationError as FilterValidationError
+from ._filter import normalize_filter
 
 log = logging.getLogger(__name__)
 
@@ -39,7 +41,24 @@ class BaseStorageBackend(Protocol):
         self, ids: list[str], vectors: list[list[float]], payloads: list[dict]
     ): ...
 
-    async def search(self, query_vector: list[float], limit: int) -> list[dict]: ...
+    async def search(
+        self,
+        query_vector: list[float],
+        limit: int,
+        filter: dict | None = None,
+    ) -> list[dict]: ...
+
+    async def update_payload_by_doc_id(
+        self, doc_id: str, payload_update: dict
+    ):
+        """Merge ``payload_update`` into the payload of every chunk tagged with ``doc_id``.
+
+        Used to rewrite per-document metadata without re-embedding: the chunk
+        text and vectors are unchanged, only the JSON payload fields are
+        updated in place. Built-in payload keys (``text``, ``source``, ``doc_id``)
+        are preserved by the caller — ``payload_update`` is the new metadata
+        dict, not the full replacement payload.
+        """
 
 
 def backend_from_env(collection: str | None = None) -> BaseStorageBackend:
@@ -137,8 +156,22 @@ class RAGStore:
 
     # --- operations ---
 
-    async def ingest_file(self, file_path: str | Path, max_tokens: int | None = None):
-        "Convert, chunk, embed, and store a file; returns the number of chunks ingested."
+    async def ingest_file(
+        self,
+        file_path: str | Path,
+        max_tokens: int | None = None,
+        metadata: dict | None = None,
+    ):
+        """Convert, chunk, embed, and store a file; returns the number of chunks ingested.
+
+        Args:
+            file_path: Path to the file to ingest.
+            max_tokens: Optional override for the per-chunk token limit.
+            metadata: Optional dict merged into every chunk payload (alongside the
+                built-in ``text``, ``source``, and ``doc_id`` fields). Use it for
+                attributes that callers may want to filter on later
+                (e.g. ``{"published_at": "2026-07-01"}``).
+        """
         path_obj = Path(file_path)
 
         # sandbox to allowed_base so library callers can't read arbitrary filesystem paths
@@ -186,7 +219,12 @@ class RAGStore:
             str(uuid.uuid5(uuid.NAMESPACE_URL, f"{path_obj.name}:{chunk}"))
             for chunk in chunks
         ]
-        payloads = [{"text": chunk, "source": path_obj.name} for chunk in chunks]
+        # doc_id lets search callers group hits by source document; metadata fields
+        # are replicated to every chunk so backends can prefilter at vector-search time
+        extra: dict[str, Any] = {"doc_id": doc_id}
+        if metadata:
+            extra.update(metadata)
+        payloads = [{"text": chunk, "source": path_obj.name, **extra} for chunk in chunks]
 
         await self.storage.upsert(ids, vectors, payloads)
         if self.on_rag:
@@ -202,12 +240,27 @@ class RAGStore:
             )
         return len(chunks)
 
-    async def search(self, query: str, limit: int = 3):
-        "Return the top-k most semantically similar passages for a query string."
+    async def search(
+        self,
+        query: str,
+        limit: int = 3,
+        filter: dict | None = None,
+    ):
+        """Return the top-k most semantically similar passages for a query string.
+
+        Args:
+            query: Natural-language query to embed and search.
+            limit: Max number of passages to return.
+            filter: Optional metadata filter dict using the shared grammar; see
+                ``extensions/rag/_filter.py`` for supported operators. Backends
+                translate this to a native prefilter where possible so semantic
+                search only runs over matching documents.
+        """
+        normalized = normalize_filter(filter)
         start = time.perf_counter()
         query_vector = (await self.llm.embeddings([query]))[0]
         search_ms = (time.perf_counter() - start) * 1000.0
-        payloads = await self.storage.search(query_vector, limit)
+        payloads = await self.storage.search(query_vector, limit, filter=normalized)
         if self.on_rag:
             await self.on_rag(
                 RAGEvent(

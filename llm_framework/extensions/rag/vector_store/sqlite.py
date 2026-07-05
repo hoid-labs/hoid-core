@@ -12,6 +12,39 @@ except ImportError as _e:
     ) from _e
 
 
+_SQLITE_OPS: dict[str, str] = {
+    "$eq": "=",
+    "$ne": "!=",
+    "$gt": ">",
+    "$gte": ">=",
+    "$lt": "<",
+    "$lte": "<=",
+}
+
+
+def _to_sqlite_clause(filt: dict) -> tuple[str, list]:
+    "Translate a normalized filter dict into (WHERE clause SQL, bind params)."
+    clauses: list[str] = []
+    params: list = []
+    for key, cond in filt.items():
+        path = f"$.{key}"
+        for op, val in cond.items():
+            if op in _SQLITE_OPS:
+                clauses.append(f"json_extract(payload, ?) {_SQLITE_OPS[op]} ?")
+                params.extend([path, val])
+            elif op == "$in":
+                placeholders = ",".join("?" for _ in val)
+                clauses.append(f"json_extract(payload, ?) IN ({placeholders})")
+                params.append(path)
+                params.extend(list(val))
+            elif op == "$nin":
+                placeholders = ",".join("?" for _ in val)
+                clauses.append(f"json_extract(payload, ?) NOT IN ({placeholders})")
+                params.append(path)
+                params.extend(list(val))
+    return " AND ".join(clauses), params
+
+
 class SqliteVecBackend:
     "SQLite-based vector storage using sqlite-vec; no server required, file or in-memory."
 
@@ -73,18 +106,55 @@ class SqliteVecBackend:
         )
         conn.commit()
 
-    async def search(self, query_vector: list[float], limit: int) -> list[dict]:
-        return await asyncio.to_thread(self._search_sync, query_vector, limit)
+    async def search(
+        self,
+        query_vector: list[float],
+        limit: int,
+        filter: dict | None = None,
+    ) -> list[dict]:
+        return await asyncio.to_thread(self._search_sync, query_vector, limit, filter)
 
-    def _search_sync(self, query_vector: list[float], limit: int) -> list[dict]:
+    def _search_sync(
+        self,
+        query_vector: list[float],
+        limit: int,
+        filter: dict | None,
+    ) -> list[dict]:
+        conn = self._connect()
+        sql = "SELECT payload FROM chunks"
+        params: list = []
+        if filter:
+            clause, filter_params = _to_sqlite_clause(filter)
+            sql += f" WHERE {clause}"
+            params.extend(filter_params)
+        sql += " ORDER BY vec_distance_cosine(embedding, ?) LIMIT ?"
+        params.extend([serialize_float32(query_vector), limit])
+        rows = conn.execute(sql, params).fetchall()
+        return [json.loads(row[0]) for row in rows]
+
+    async def update_payload_by_doc_id(
+        self, doc_id: str, payload_update: dict
+    ) -> None:
+        """Merge ``payload_update`` into the JSON payload of every chunk tagged with ``doc_id``.
+
+        Embeddings are preserved (no re-embedding); only the payload column is
+        rewritten. Built-in payload keys (``text``, ``source``, ``doc_id``) are
+        never overwritten because the caller passes only the metadata dict.
+        """
+        return await asyncio.to_thread(self._update_payload_sync, doc_id, payload_update)
+
+    def _update_payload_sync(self, doc_id: str, payload_update: dict) -> None:
         conn = self._connect()
         rows = conn.execute(
-            """
-            SELECT payload
-            FROM chunks
-            ORDER BY vec_distance_cosine(embedding, ?)
-            LIMIT ?
-            """,
-            [serialize_float32(query_vector), limit],
+            "SELECT id, payload FROM chunks WHERE json_extract(payload, '$.doc_id') = ?",
+            (doc_id,),
         ).fetchall()
-        return [json.loads(row[0]) for row in rows]
+        if not rows:
+            return
+        updates: list[tuple] = []
+        for chunk_id, payload_json in rows:
+            payload = json.loads(payload_json)
+            payload.update(payload_update)
+            updates.append((json.dumps(payload), chunk_id))
+        conn.executemany("UPDATE chunks SET payload = ? WHERE id = ?", updates)
+        conn.commit()

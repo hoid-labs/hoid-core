@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `update_payload_by_doc_id` method on the `BaseStorageBackend` Protocol for in-place chunk-payload rewrites. Lets callers update per-document metadata without re-embedding: chunk text and vectors are unchanged, only the JSON payload fields are merged in place. `SqliteVecBackend` implements it via a single `UPDATE chunks SET payload = ?` per chunk filtered by `json_extract(payload, '$.doc_id')`. `QdrantBackend` implements it via `set_payload(points=Filter(... doc_id ...))`. Built-in payload keys (`text`, `source`, `doc_id`) are never overwritten — the caller passes only the metadata dict. Required by the studio's post-upload metadata editor so the KB chunk count stays stable across edits.
+
 ### Fixed
 - `Agent._run_loop` now uses a `while` loop so mutations to `max_steps` inside `before_iteration_callback` actually extend the run. Previously `range(self.max_steps)` was evaluated once at loop start, making runtime extension a no-op.
 

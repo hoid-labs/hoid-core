@@ -1,11 +1,40 @@
 try:
     from qdrant_client import AsyncQdrantClient
-    from qdrant_client.models import Distance, PointStruct, VectorParams
+    from qdrant_client.models import (
+        Distance,
+        FieldCondition,
+        Filter,
+        MatchAny,
+        MatchExcept,
+        MatchValue,
+        PointStruct,
+        Range,
+        VectorParams,
+    )
 except ImportError as _e:
     raise ImportError(
         "QdrantBackend requires the [qdrant] extra: "
         "uv pip install 'llm-framework[qdrant]'"
     ) from _e
+
+
+def _to_qdrant_filter(filt: dict) -> Filter:
+    "Translate a normalized filter dict into a Qdrant ``Filter`` (AND-composed must clauses)."
+    must: list = []
+    for key, cond in filt.items():
+        for op, val in cond.items():
+            if op == "$eq":
+                must.append(FieldCondition(key=key, match=MatchValue(value=val)))
+            elif op == "$ne":
+                # ``except`` is a Python keyword, so unpack via ** to reach the qdrant kwarg
+                must.append(FieldCondition(key=key, match=MatchExcept(**{"except": [val]})))
+            elif op in ("$gt", "$gte", "$lt", "$lte"):
+                must.append(FieldCondition(key=key, range=Range(**{op.lstrip("$"): val})))
+            elif op == "$in":
+                must.append(FieldCondition(key=key, match=MatchAny(any=list(val))))
+            elif op == "$nin":
+                must.append(FieldCondition(key=key, match=MatchExcept(**{"except": list(val)})))
+    return Filter(must=must)
 
 
 class QdrantBackend:
@@ -67,9 +96,41 @@ class QdrantBackend:
         ]
         await self.db.upsert(collection_name=self.collection_name, points=points)
 
-    async def search(self, query_vector: list[float], limit: int) -> list[dict]:
+    async def search(
+        self,
+        query_vector: list[float],
+        limit: int,
+        filter: dict | None = None,
+    ) -> list[dict]:
         await self._ensure_collection()
         response = await self.db.query_points(
-            collection_name=self.collection_name, query=query_vector, limit=limit
+            collection_name=self.collection_name,
+            query=query_vector,
+            query_filter=_to_qdrant_filter(filter) if filter else None,
+            limit=limit,
         )
         return [p for p in (hit.payload for hit in response.points) if p is not None]
+
+    async def update_payload_by_doc_id(
+        self, doc_id: str, payload_update: dict
+    ) -> None:
+        """Merge ``payload_update`` into every point tagged with ``doc_id``.
+
+        Uses Qdrant's ``set_payload`` filter API to rewrite payload fields in
+        place; vectors are preserved (no re-embedding). Built-in payload keys
+        (``text``, ``source``, ``doc_id``) are never overwritten because the
+        caller passes only the metadata dict.
+        """
+        await self._ensure_collection()
+        await self.db.set_payload(
+            collection_name=self.collection_name,
+            payload=payload_update,
+            points=Filter(
+                must=[
+                    FieldCondition(
+                        key="doc_id",
+                        match=MatchValue(value=doc_id),
+                    )
+                ]
+            ),
+        )

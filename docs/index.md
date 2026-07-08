@@ -1,4 +1,4 @@
-# llm-framework
+# hoid
 
 Minimal Python library for building LLM-powered agents with a low dependency footprint.
 
@@ -22,4 +22,4 @@ Minimal Python library for building LLM-powered agents with a low dependency foo
 - **[Extensions](api/extensions.md)** — `MCPClient`, `MCPManager`, `MCPServer`, `MCPContext`, `MemoryStore`, `RAGStore`, auth gate, `OIDCAuthProvider`, guardrails, vector stores
 - **[Configuration](api/config.md)** — `Config` dataclass
 
-Reference tool and MCP-server implementations live under [`examples/`](https://github.com/iciouss/llm-framework-core/tree/main/examples).
+Reference tool and MCP-server implementations live under [`examples/`](https://github.com/hoid-labs/hoid-core/tree/main/examples).

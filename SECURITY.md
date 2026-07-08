@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-The latest minor release of `llm-framework` receives security updates. Earlier minor versions are not patched; please upgrade.
+The latest minor release of `hoid` receives security updates. Earlier minor versions are not patched; please upgrade.
 
 | Version | Supported |
 | --- | --- |
@@ -17,7 +17,7 @@ Email a description of the vulnerability to **`<security-contact>`** (replace wi
 
 - A description of the vulnerability and its impact
 - A minimal proof-of-concept or reproduction steps
-- The version of `llm-framework` affected
+- The version of `hoid` affected
 - Your environment (Python version, OS, optional extras in use)
 
 You can expect an acknowledgment within 3 business days. If you do not hear back, follow up on the same thread.
@@ -49,7 +49,7 @@ The following are out of scope:
 
 ## Security best practices for users
 
-- Pin `llm-framework` to a specific minor version in production (`llm-framework>=0.x,<0.(x+1)`)
+- Pin `hoid` to a specific minor version in production (`hoid>=0.x,<0.(x+1)`)
 - Run agents with the smallest possible tool surface — disable any tool the agent does not need
 - Set `CA_BUNDLE_PATH` if your LLM endpoint uses a private CA
 - Use `AuthGate` to enforce per-user tool access when serving agents to multiple users

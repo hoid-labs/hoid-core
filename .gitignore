@@ -41,7 +41,7 @@ data/
 diagnostics/
 *.diff
 .vite
-llm_framework.svg
+hoid.svg
 .coverage
 ignore
 

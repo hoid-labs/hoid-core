@@ -1,6 +1,6 @@
 # Environment Variables
 
-The `llm-framework` relies on environment variables for configuration. To set up your local environment, copy the `.env.example` file to a new file named `.env` and fill in your specific values.
+The `hoid` relies on environment variables for configuration. To set up your local environment, copy the `.env.example` file to a new file named `.env` and fill in your specific values.
 
 The table below is generated from `.env.example`, so it stays in sync with the codebase.
 Use it as the source of truth when configuring local runs, examples, or MCP/plugin servers.

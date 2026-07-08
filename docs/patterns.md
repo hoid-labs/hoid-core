@@ -68,7 +68,7 @@ The first docstring line becomes the tool description. An `Args:` section maps p
 Wrap a tool with `@cached_tool` to cache its results for the lifetime of the process. Safe for both sync and async tools. Use for deterministic, idempotent tool calls (file reads, schema lookups) that a multi-step agent might invoke repeatedly.
 
 ```python
-from llm_framework.core import cached_tool
+from hoid.core import cached_tool
 
 @cached_tool
 def get_schema(table: str) -> str:
@@ -177,7 +177,7 @@ All events except `task` and `tool_error` carry token fields: `context_tokens`, 
 `HistoryBuffer` maintains rolling history across multiple `agent.run()` calls without modifying Agent internals. Pass the buffered history as `prior_messages` on each run.
 
 ```python
-from llm_framework.core import HistoryBuffer
+from hoid.core import HistoryBuffer
 
 buf = HistoryBuffer(max_tokens=4000)  # or max_messages=20
 
@@ -195,7 +195,7 @@ buf.extend(result["messages"])
 `LLMClient.from_env()` reads `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`, and `CA_BUNDLE_PATH` from `.env`. To use multiple configurations in the same script, construct directly:
 
 ```python
-from llm_framework.core import LLMClient
+from hoid.core import LLMClient
 
 async with LLMClient.from_env() as client:
     ...
@@ -216,7 +216,7 @@ custom_ca = LLMClient(base_url="...", api_key="...", model="...", verify="./cust
 ```python
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
-from llm_framework.extensions.mcp import MCPServer, MCPContext
+from hoid.extensions.mcp import MCPServer, MCPContext
 
 @asynccontextmanager
 async def lifespan(server: MCPServer) -> AsyncIterator[dict]:
@@ -291,7 +291,7 @@ Guards are `(str) -> str` callables (or async). Raise to block, return (optional
 `llm_guard` uses a natural language policy evaluated by an LLM — handles edge cases that regex cannot (paraphrasing, context, jailbreaks). `block_keywords` and `strip_pii` are fast regex-based alternatives for simple cases.
 
 ```python
-from llm_framework.extensions.guardrails import block_keywords, strip_pii, llm_guard
+from hoid.extensions.guardrails import block_keywords, strip_pii, llm_guard
 agent = Agent(
     client, tools,
     input_guards=[
@@ -320,7 +320,7 @@ Guardrail scope determines when the guard runs:
 `HistoryBuffer` maintains rolling context across multiple `agent.run()` calls without modifying Agent internals.
 
 ```python
-from llm_framework.core import HistoryBuffer
+from hoid.core import HistoryBuffer
 
 buf = HistoryBuffer(max_tokens=4000)
 
@@ -363,7 +363,7 @@ data = json.loads(response["choices"][0]["message"]["content"])
 `Orchestrator` creates a supervisor Agent internally and injects a `delegate(agent_name, task)` tool into it. Sub-agents can share an LLMClient or use separate ones.
 
 ```python
-from llm_framework.core.orchestrator import Orchestrator
+from hoid.core.orchestrator import Orchestrator
 orchestrator = Orchestrator(
     client=client,
     sub_agents={"fs": fs_agent, "math": math_agent},
@@ -378,7 +378,7 @@ result = await orchestrator.run("task")
 `OIDCAuthProvider` implements the Authorization Code flow. It is in `extensions/auth/providers/oidc.py` and requires the `[oidc]` extra (`PyJWT[crypto]`).
 
 ```python
-from llm_framework.extensions.auth import OIDCAuthProvider
+from hoid.extensions.auth import OIDCAuthProvider
 
 # construct from env vars: OIDC_CLIENT_ID, OIDC_CLIENT_SECRET,
 # OIDC_DISCOVERY_URL, OIDC_ROLES_CLAIM (optional)
@@ -415,14 +415,14 @@ See `examples/chats/18.2_web_oidc_agent.py` for a complete FastAPI integration.
 
 The framework uses a **sentinel pattern** — every optional dependency is imported at module top level and defaulted to `None` on failure. Actual failure is deferred to the point of use, not import time. This means:
 
-- `from llm_framework.extensions.rag import RAGStore` always succeeds, even without `[rag]` installed.
+- `from hoid.extensions.rag import RAGStore` always succeeds, even without `[rag]` installed.
 - Instantiating `RAGStore(...)` raises a clear `ImportError` with an install hint if the required packages are missing.
 - Static analysis tools and import-time checks are never confused by buried conditional imports.
 
-**`llm_framework/_optional.py`** is the single source of truth mapping package names to extra names:
+**`hoid/_optional.py`** is the single source of truth mapping package names to extra names:
 
 ```python
-from llm_framework._optional import EXTRAS_MAP
+from hoid._optional import EXTRAS_MAP
 # {"fastapi": "mcp", "jwt": "oidc", "semantic_text_splitter": "rag", ...}
 ```
 
@@ -436,7 +436,7 @@ EXTRAS_MAP: dict[str, str] = {
 }
 
 # 2. In the file that uses it — top-level sentinel
-from llm_framework._optional import require as _require
+from hoid._optional import require as _require
 
 try:
     import my_package
@@ -453,7 +453,7 @@ class MyFeature:
 The `require()` function raises:
 ```
 ImportError: 'my_package' is required but not installed.
-Install it with: uv pip install 'llm-framework[my_extra]'
+Install it with: uv pip install 'hoid[my_extra]'
 ```
 
 **Never use lazy imports** (imports inside a function or method body) for optional dependencies. They are invisible to grep and static analysis, and they produce confusing `NameError`s if the variable leaks out of scope.

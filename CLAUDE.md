@@ -4,9 +4,9 @@ Instructions for AI agents (Claude Code, GitHub Copilot, Cursor, etc.) working i
 
 ## Project
 
-Minimal Python library for building LLM-powered agents. Wrapped by [`llm-framework-studio`](https://github.com/iciouss/llm-framework-studio) (FastAPI + Svelte 5) and consumed by plugin packages via the `llm_framework.plugins` entry-point group. Priority: low dependency footprint and supply chain safety.
+Minimal Python library for building LLM-powered agents. Wrapped by [`hoid-studio`](https://github.com/hoid-labs/hoid-studio) (FastAPI + Svelte 5) and consumed by plugin packages via the `hoid.plugins` entry-point group. Priority: low dependency footprint and supply chain safety.
 
-- `llm_framework/` — the library
+- `hoid/` — the library
   - `_env.py` — `load_env()` helper; reads `.env` from cwd
   - `_optional.py` — `EXTRAS_MAP` + `require()` for optional-dep sentinels
   - `core/` — httpx + dotenv + defusedxml only; always available
@@ -16,7 +16,7 @@ Minimal Python library for building LLM-powered agents. Wrapped by [`llm-framewo
 - `tools/diagnose.sh` — diagnostic toolchain (ruff, bandit, radon, mypy, deptry, pytest-cov, pydeps)
 - `docs/` — mkdocs site (`docs/api/`, `docs/patterns.md`, `docs/environment-variables.md`)
 
-This file is the upstream source for sibling repos. When core's rules change, `llm-framework-studio/CLAUDE.md` and `llm-framework-plugins/CLAUDE.md` update to match.
+This file is the upstream source for sibling repos. When core's rules change, `hoid-studio/CLAUDE.md` and `hoid-plugins/CLAUDE.md` update to match.
 
 ## Quick Start
 
@@ -58,19 +58,19 @@ uv run pytest tests/integration -v -m integration                    # live LLM 
 ## Diagnostics
 
 ```sh
-uv run ruff check llm_framework tests                                # lint
-uv run ruff check --fix llm_framework tests                          # lint + autofix
-uv run mypy llm_framework                                            # type-check (library only)
-uv run bandit -r llm_framework -ll                                   # security scan
-uv run deptry llm_framework tests                                    # unused/missing deps
+uv run ruff check hoid tests                                # lint
+uv run ruff check --fix hoid tests                          # lint + autofix
+uv run mypy hoid                                            # type-check (library only)
+uv run bandit -r hoid -ll                                   # security scan
+uv run deptry hoid tests                                    # unused/missing deps
 bash tools/diagnose.sh                                               # full toolchain
 ```
 
 ## Architecture
 
-Three layers with one-way imports (`core` never imports from `extensions`). The public API is what `llm_framework.core.__init__` re-exports (`LLMClient`, `Agent`, `Orchestrator`, `HistoryBuffer`, `tool`, `cached_tool`); everything else is reached via explicit submodule paths.
+Three layers with one-way imports (`core` never imports from `extensions`). The public API is what `hoid.core.__init__` re-exports (`LLMClient`, `Agent`, `Orchestrator`, `HistoryBuffer`, `tool`, `cached_tool`); everything else is reached via explicit submodule paths.
 
-### `llm_framework/core/`
+### `hoid/core/`
 
 httpx + dotenv + defusedxml only. Always importable.
 
@@ -82,7 +82,7 @@ httpx + dotenv + defusedxml only. Always importable.
 - `orchestrator.py` — multi-agent supervisor / delegate pattern
 - `protocols.py` — structural `Protocol`s; lets `core` declare shapes without importing `extensions`
 
-### `llm_framework/extensions/`
+### `hoid/extensions/`
 
 Optional; gated by pip extras. Never imports from `core/__init__.py` — targets submodules directly.
 
@@ -121,7 +121,7 @@ These are non-negotiable. See `.github/copilot-instructions.md` for the parallel
 
 **Architecture.** Strict DAG imports: `core` must not import from `extensions` at runtime; use `Protocol` + `TYPE_CHECKING` for type-only references. Submodules import from explicit submodule paths, never from the top-level package `__init__.py` (prevents recursive execution loops). Catch specific exceptions — `except Exception:` is a code smell. Protocol methods must be fully implemented; never stub with `return None`.
 
-**Optional deps.** For *third-party* optional packages, use the three-step sentinel pattern: (1) add `"pkg": "extra_name"` to `EXTRAS_MAP` in `llm_framework/_optional.py`, (2) declare a top-level `try: import pkg / except ImportError: pkg = None  # type: ignore[assignment]`, (3) call `_require("pkg", pkg)` at instantiation or first use (not at import time). Never use lazy imports inside function bodies — the sentinel pattern defers the failure to the call site with an install hint.
+**Optional deps.** For *third-party* optional packages, use the three-step sentinel pattern: (1) add `"pkg": "extra_name"` to `EXTRAS_MAP` in `hoid/_optional.py`, (2) declare a top-level `try: import pkg / except ImportError: pkg = None  # type: ignore[assignment]`, (3) call `_require("pkg", pkg)` at instantiation or first use (not at import time). Never use lazy imports inside function bodies — the sentinel pattern defers the failure to the call site with an install hint.
 
 **Consistency.** Any pattern introduced in one file of a group (`examples/tools/`, `examples/mcp_servers/`, `extensions/*/`) must be applied to all equivalent files in that group immediately — error surfacing, `__main__` CLI blocks, logging, `_MAX_CHARS` truncation, etc. Pareto principle: handle the 80% case cleanly.
 
@@ -130,7 +130,7 @@ These are non-negotiable. See `.github/copilot-instructions.md` for the parallel
 **`@tool` decorator.** Type hints + docstring auto-build the JSON schema. Supports sync and async. Use `@cached_tool(maxsize=128)` for LRU caching.
 
 ```python
-from llm_framework.core import tool
+from hoid.core import tool
 
 @tool
 def search_notes(query: str, limit: int = 5) -> str:
@@ -157,7 +157,7 @@ my_feature = ["my_pkg>=1.0"]
 from typing import Protocol, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from llm_framework.extensions.my_feature import MyService
+    from hoid.extensions.my_feature import MyService
 
 class MyServiceProtocol(Protocol):
     async def do_thing(self, x: str) -> dict: ...
@@ -168,14 +168,14 @@ The concrete class in `extensions/` satisfies the Protocol structurally — no i
 **Observability event.** Every meaningful call site emits one. No-op when no hook is registered.
 
 ```python
-from llm_framework.observability import emit, MyEvent
+from hoid.observability import emit, MyEvent
 
 await emit(MyEvent(event_type="started", payload={"x": 42}))
 ```
 
 The global hook is opt-in. Observability is the right place for cross-cutting concerns; the per-instance `on_step` callback is for tight integration with a specific agent.
 
-**Public API surface.** `from llm_framework.core import X` re-exports only the six names listed in `core/__init__.py`. New public symbols in `core/` need to be added to that `__all__` list to be reachable via the top-level import. Extensions are re-exported from `extensions/__init__.py` (see `MemoryStore`, `RAGStore`, `AuthGate`, `MCPClient`, etc.).
+**Public API surface.** `from hoid.core import X` re-exports only the six names listed in `core/__init__.py`. New public symbols in `core/` need to be added to that `__all__` list to be reachable via the top-level import. Extensions are re-exported from `extensions/__init__.py` (see `MemoryStore`, `RAGStore`, `AuthGate`, `MCPClient`, etc.).
 
 ## Anti-patterns
 
@@ -195,12 +195,12 @@ Curated list of mistakes that have actually happened in this repo. Don't replica
 ### A tool
 
 1. Create or edit a file in `examples/tools/` (or `examples/basics/` if it's a demo).
-2. `from llm_framework.core import tool`; decorate with `@tool`.
+2. `from hoid.core import tool`; decorate with `@tool`.
 3. One-line docstring + `Args:` block per parameter. Re-export in `examples/tools/__init__.py`.
 
 ### An extension
 
-1. Create `llm_framework/extensions/my_feature.py` (single file) or `extensions/my_feature/` (package).
+1. Create `hoid/extensions/my_feature.py` (single file) or `extensions/my_feature/` (package).
 2. Zero new deps → import unconditionally in `extensions/__init__.py`.
 3. Has optional deps → use the sentinel pattern. Add to `_optional.EXTRAS_MAP`. Declare a new named extra in `pyproject.toml`.
 
@@ -235,12 +235,12 @@ Implement `async def resolve(self, credentials: dict) -> AuthContext | None`. No
 
 ## Pre-PR Checklist
 
-1. `uv run ruff check llm_framework tests` — clean
-2. `uv run mypy llm_framework` — clean
+1. `uv run ruff check hoid tests` — clean
+2. `uv run mypy hoid` — clean
 3. `uv run pytest tests/unit tests/test_packaging.py` — all green
 4. `tools/diagnose.sh` — clean (or document any intentional warning)
 5. New env vars have `.env.example` entries in the exact format `# [Required|Optional] One-line description.` on the line above
-6. New top-level files under `llm_framework/` are reflected in the Architecture map above
+6. New top-level files under `hoid/` are reflected in the Architecture map above
 7. New MCP/agent servers under `README.md` ("MCP Tools Servers" / "Agent Servers" tables)
 8. `CHANGELOG.md` has an `[Unreleased]` entry under the right section (`Added` / `Changed` / `Deprecated` / `Removed` / `Fixed` / `Security`)
 
@@ -257,7 +257,7 @@ Workflow reminders (not in the skill — always true):
 ## Core-specific Rules
 
 - `ruff` line-length 88; rules `E/F/W/I/UP/B/SIM`; `E501` ignored.
-- `mypy` is strict on `llm_framework/` only (tests are exercised by `pytest`).
+- `mypy` is strict on `hoid/` only (tests are exercised by `pytest`).
 - Optional deps used inside the library must be declared as sentinels — never imported at function-body level.
 - `core/` re-exports exactly six symbols from `__init__.py` (`LLMClient`, `Agent`, `Orchestrator`, `HistoryBuffer`, `tool`, `cached_tool`). Add new public symbols there deliberately — it is the contract with downstream consumers.
 - `extensions/__init__.py` re-exports the public surface of each optional subsystem. New extension classes get added there; otherwise they are reachable only via explicit submodule paths.

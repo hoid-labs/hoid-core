@@ -1,8 +1,8 @@
-# llm-framework
+# hoid
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![PyPI](https://img.shields.io/pypi/v/llm-framework)](https://pypi.org/project/llm-framework/)
-[![CI](https://github.com/iciouss/llm-framework-core/actions/workflows/ci.yaml/badge.svg)](https://github.com/iciouss/llm-framework-core/actions/workflows/ci.yaml)
+[![PyPI](https://img.shields.io/pypi/v/hoid)](https://pypi.org/project/hoid/)
+[![CI](https://github.com/hoid-labs/hoid-core/actions/workflows/ci.yaml/badge.svg)](https://github.com/hoid-labs/hoid-core/actions/workflows/ci.yaml)
 [![Python](https://img.shields.io/badge/python-3.13%2B-blue)](https://www.python.org/downloads/)
 
 Minimal Python library for building LLM-powered agents. Designed for a low dependency footprint and supply chain safety.
@@ -19,7 +19,7 @@ Minimal Python library for building LLM-powered agents. Designed for a low depen
 ## Install
 
 ```bash
-git clone <repo> && cd llm-framework
+git clone <repo> && cd hoid
 uv venv && source .venv/bin/activate
 uv pip install -e .               # core only: httpx, python-dotenv
 uv pip install -e ".[mcp]"        # + fastapi (HTTP transport for MCP servers)
@@ -108,7 +108,7 @@ The framework reads configuration directly from environment variables via `LLMCl
 ### Basic agent with tools
 
 ```python
-from llm_framework.core import LLMClient, Agent
+from hoid.core import LLMClient, Agent
 from examples.tools.filesystem import list_directory, read_file
 
 async with LLMClient.from_env() as client:
@@ -165,7 +165,7 @@ Every event is a dict with an `"event"` key. Most events also carry token fields
 MCP (Model Context Protocol) allows you to connect to out-of-process tool servers.
 
 ```python
-from llm_framework.extensions import MCPClient, MCPManager
+from hoid.extensions import MCPClient, MCPManager
 
 # Connect to one or more MCP servers (HTTP, stdio, or SSE)
 # timeout covers the full round-trip when the remote server runs its own ReAct loop
@@ -178,7 +178,7 @@ async with MCPManager([MCPClient.http("http://localhost:8080/mcp", timeout=300.0
 ### Multi-agent orchestration
 
 ```python
-from llm_framework.core import Orchestrator
+from hoid.core import Orchestrator
 
 orchestrator = Orchestrator(
     client=client,
@@ -210,7 +210,7 @@ agent = Agent(
 The auth system has two decoupled concerns: **authentication** (who is the caller?) and **authorization** (what tools can they use?).
 
 ```python
-from llm_framework.extensions.auth import AuthGate, MemoryPolicyBackend, StaticAuthProvider, AuthContext
+from hoid.extensions.auth import AuthGate, MemoryPolicyBackend, StaticAuthProvider, AuthContext
 
 # define which tools each role can call
 backend = MemoryPolicyBackend({
@@ -231,7 +231,7 @@ result = await agent.run(prompt, auth_context=auth_ctx)
 **OIDC Authorization Code flow** (`[oidc]` extra required):
 
 ```python
-from llm_framework.extensions.auth import OIDCAuthProvider
+from hoid.extensions.auth import OIDCAuthProvider
 import secrets
 
 provider = OIDCAuthProvider.from_env(
@@ -254,7 +254,7 @@ See `examples/chats/18.2_web_oidc_agent.py` for a complete FastAPI integration.
 ### Guardrails
 
 ```python
-from llm_framework.extensions.guardrails import block_keywords, strip_pii, llm_guard
+from hoid.extensions.guardrails import block_keywords, strip_pii, llm_guard
 
 agent = Agent(
     client, tools,
@@ -295,7 +295,7 @@ data = json.loads(response["choices"][0]["message"]["content"])
 `HistoryBuffer` keeps rolling history across multiple `agent.run()` calls without modifying Agent internals. Pass it as `prior_messages` on each call.
 
 ```python
-from llm_framework.core import HistoryBuffer
+from hoid.core import HistoryBuffer
 
 buf = HistoryBuffer(max_tokens=4000)  # or max_messages=20
 
@@ -321,7 +321,7 @@ result = await buf.run(agent, "Follow-up")  # history injected automatically
 `@cached_tool` caches tool return values for the lifetime of the process — safe for deterministic, side-effect-free tools a multi-step agent might call repeatedly (file reads, schema lookups, API metadata).
 
 ```python
-from llm_framework.core import cached_tool
+from hoid.core import cached_tool
 
 @cached_tool
 def get_schema(table: str) -> str:

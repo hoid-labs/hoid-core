@@ -10,7 +10,7 @@ If you are unsure where to start, start in core: create an `LLMClient`, build an
 `LLMClient` is the provider-agnostic HTTP client for chat completions and embeddings.
 Use it directly when you need low-level model calls, or pass it to `Agent` and `Orchestrator` for higher-level workflows.
 
-### ::: llm_framework.core.llm.LLMClient
+### ::: hoid.core.llm.LLMClient
 
 ---
 
@@ -19,7 +19,7 @@ Use it directly when you need low-level model calls, or pass it to `Agent` and `
 `Agent` implements the ReAct loop: reason, call tools, observe, and iterate to a final answer.
 It is the main entry point for tool-using assistants and supports approvals, guardrails, and auth-aware tool filtering.
 
-### ::: llm_framework.core.agent.Agent
+### ::: hoid.core.agent.Agent
 
 ---
 
@@ -28,7 +28,7 @@ It is the main entry point for tool-using assistants and supports approvals, gua
 `Orchestrator` is a supervisor/delegate layer for multi-agent task routing.
 Use it when one prompt should be split across specialized agents with different prompts, tools, or responsibilities.
 
-### ::: llm_framework.core.orchestrator.Orchestrator
+### ::: hoid.core.orchestrator.Orchestrator
 
 ---
 
@@ -37,7 +37,7 @@ Use it when one prompt should be split across specialized agents with different 
 `HistoryBuffer` maintains rolling multi-turn context with token-budget trimming.
 Use it to keep conversations coherent while controlling prompt growth and cost.
 
-### ::: llm_framework.core.history.HistoryBuffer
+### ::: hoid.core.history.HistoryBuffer
 
 ---
 
@@ -49,12 +49,12 @@ No I/O happens here — consumers register a hook and decide where events go (st
 The pattern is: `emit(LLMCallEvent(...))` (or any of the typed event dataclasses) from a call site, and the global hook receives it. With no hook registered, `emit` is a no-op, so adding events never costs anything for users who don't subscribe.
 
 ```python
-from llm_framework.core.observability import set_hook, print_hook
+from hoid.core.observability import set_hook, print_hook
 
 set_hook(print_hook())  # events now print to stdout
 ```
 
-### ::: llm_framework.core.observability
+### ::: hoid.core.observability
 
 ---
 
@@ -63,6 +63,6 @@ set_hook(print_hook())  # events now print to stdout
 The decorators define how Python callables become model-callable tools.
 Use `@tool` for schema generation from type hints and docstrings, and `@cached_tool` when deterministic tool calls should reuse prior results.
 
-### ::: llm_framework.core.tools.tool
+### ::: hoid.core.tools.tool
 
-### ::: llm_framework.core.tools.cached_tool
+### ::: hoid.core.tools.cached_tool

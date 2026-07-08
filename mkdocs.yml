@@ -1,8 +1,8 @@
-site_name: llm-framework
+site_name: hoid
 site_description: Minimal Python library for building LLM-powered agents with a low dependency footprint.
-site_url: https://iciouss.github.io/llm-framework/ # Uncomment and update
-# repo_url: https://github.com/iciouss/llm-framework # Adds GitHub icon to header
-repo_name: iciouss/llm-framework
+site_url: https://hoid-labs.github.io/hoid-core/ # Uncomment and update
+# repo_url: https://github.com/iciouss/hoid # Adds GitHub icon to header
+repo_name: iciouss/hoid
 
 theme:
   name: material
@@ -48,7 +48,7 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
-          paths: [llm_framework]
+          paths: [hoid]
           options:
             docstring_style: google
             merge_init_into_class: true

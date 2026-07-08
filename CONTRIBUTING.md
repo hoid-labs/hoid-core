@@ -1,12 +1,12 @@
 # Contributing
 
-Thanks for your interest in `llm-framework`. This document covers the mechanics of contributing — for design rules, code style, and architectural guidance, see [`CLAUDE.md`](CLAUDE.md) at the repo root. AI agents (Claude Code, GitHub Copilot, Cursor, etc.) working in this repo also read `CLAUDE.md`; keep it current.
+Thanks for your interest in `hoid`. This document covers the mechanics of contributing — for design rules, code style, and architectural guidance, see [`CLAUDE.md`](CLAUDE.md) at the repo root. AI agents (Claude Code, GitHub Copilot, Cursor, etc.) working in this repo also read `CLAUDE.md`; keep it current.
 
 ## Setup
 
 ```sh
-git clone https://github.com/iciouss/llm-framework-core
-cd llm-framework-core
+git clone https://github.com/hoid-labs/hoid-core
+cd hoid-core
 uv venv
 source .venv/bin/activate
 uv pip install -e ".[std]"   # core + rag + oidc
@@ -31,10 +31,10 @@ uv run --with pytest pytest tests/test_packaging.py
 ## Before you open a pull request
 
 1. `uv run pytest tests/unit tests/test_packaging.py` — all green
-2. `uv run mypy llm_framework` — clean
-3. `uv run ruff check llm_framework tests` — clean
-4. `uv run bandit -r llm_framework -ll` — no new findings
-5. `uv run deptry llm_framework tests` — no undeclared or unused imports
+2. `uv run mypy hoid` — clean
+3. `uv run ruff check hoid tests` — clean
+4. `uv run bandit -r hoid -ll` — no new findings
+5. `uv run deptry hoid tests` — no undeclared or unused imports
 6. New code is covered by tests; coverage is not reduced
 7. `CHANGELOG.md` `[Unreleased]` has an entry under the right section (`Added` / `Changed` / `Fixed` / `Removed` / `Security`)
 8. `CLAUDE.md` Architecture map is updated if you added files to tracked directories
@@ -61,7 +61,7 @@ Examples in the git log show the convention in practice.
 
 ## Reporting bugs
 
-Open a GitHub issue with a minimal reproduction, the output of `uv run python -V`, and the output of `uv pip show llm-framework`. If the bug is security-related, **do not** open a public issue — see [`SECURITY.md`](SECURITY.md) for the disclosure process.
+Open a GitHub issue with a minimal reproduction, the output of `uv run python -V`, and the output of `uv pip show hoid`. If the bug is security-related, **do not** open a public issue — see [`SECURITY.md`](SECURITY.md) for the disclosure process.
 
 ## Code of conduct
 

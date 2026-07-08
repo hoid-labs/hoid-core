@@ -3,12 +3,12 @@
 This page covers practical installation paths for different workflows.
 
 Use source install if you are developing in this repository.
-Use wheel install if you want to consume a pinned release artifact without cloning the repo.
+Use release install if you want to consume a published version from PyPI.
 
 ## Choose an installation path
 
 - **Source install (recommended for contributors)**: best for local development, examples, and tests.
-- **Release wheel install**: best for consumers pinning to a specific GitHub release.
+- **Release install (PyPI)**: best for consumers who want a pinned published version.
 
 ## Source install (recommended for this repo)
 
@@ -38,31 +38,22 @@ This keeps dependencies explicit and aligned with the framework's low-footprint 
 | `[std]` | `rag` + `oidc` — recommended full install |
 | `[qdrant]` | `qdrant-client` — Qdrant vector backend; requires `VECTOR_BACKEND=qdrant`; install alongside `[rag]` |
 
-## Release wheel install
+## Release install (PyPI)
 
-Because `llm-framework` is distributed via GitHub Releases (instead of PyPI), you can install a `.whl` directly.
-
-## Base Installation
-
-To install the minimal core (which only requires `httpx` and `python-dotenv`), run:
+`hoid` is published to PyPI. Install with `uv pip` or `pip`:
 
 ```bash
-pip install "https://<PAT>@github.com/<owner>/llm-framework/releases/download/v0.1.0/llm_framework-0.1.0-py3-none-any.whl"
+pip install hoid              # base install (httpx, python-dotenv, defusedxml)
+pip install "hoid[std]"       # recommended full install (rag + oidc)
 ```
 
-!!! warning "GitHub PAT Required"
-    You must replace `<PAT>` in the URL with a GitHub fine-grained Personal Access Token. This token must have `contents: read` permissions for the repository.
-
-## Optional Extras
-
-If you need specific extensions, you can install them using bracket notation at the end of the wheel URL. Pull only what you need to keep your dependency footprint small.
+Pull only what you need to keep your dependency footprint small:
 
 ```bash
-# Install with Retrieval-Augmented Generation (RAG) support
-pip install "https://<PAT>@github.com/<owner>/llm-framework/releases/download/v0.1.0/llm_framework-0.1.0-py3-none-any.whl[rag]"
-
-# Install the recommended full-featured library (rag + oidc)
-pip install "https://<PAT>@github.com/<owner>/llm-framework/releases/download/v0.1.0/llm_framework-0.1.0-py3-none-any.whl[std]"
+pip install "hoid[mcp]"        # fastapi (HTTP transport for MCP servers)
+pip install "hoid[rag]"        # pypdf, semantic-text-splitter, sqlite-vec
+pip install "hoid[qdrant]"     # qdrant-client (Qdrant backend; set VECTOR_BACKEND=qdrant)
+pip install "hoid[oidc]"       # PyJWT[crypto] (OIDC Authorization Code flow)
 ```
 
 After installation, continue with the Quickstart to verify your environment and run a first agent.

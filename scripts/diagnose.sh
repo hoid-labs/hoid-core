@@ -7,23 +7,23 @@ echo "Starting framework diagnostics..."
 
 # 2. Map Architecture & Dependencies (JSON)
 echo "-> Running pydeps (Architecture)..."
-uv tool run pydeps llm_framework --show-deps --noshow --no-output > diagnostics/01_architecture.json 2>&1
+uv tool run pydeps hoid --show-deps --noshow --no-output > diagnostics/01_architecture.json 2>&1
 
 # 3. Deep Logic & Anti-Pattern Scan (ALL RULES)
 echo "-> Running ruff (Logic & Anti-Patterns)..."
-uv tool run ruff check llm_framework/ --select ALL --statistics > diagnostics/02_logic_errors.txt 2>&1 || true
+uv tool run ruff check hoid/ --select ALL --statistics > diagnostics/02_logic_errors.txt 2>&1 || true
 
 # 4. Security Vulnerabilities
 echo "-> Running bandit (Security)..."
-uv tool run bandit -r llm_framework/ -ll > diagnostics/03_security_risks.txt 2>&1 || true
+uv tool run bandit -r hoid/ -ll > diagnostics/03_security_risks.txt 2>&1 || true
 
 # 5. Code Complexity (Cyclomatic Scores)
 echo "-> Running radon (Complexity)..."
-uv tool run radon cc llm_framework/ -s -a > diagnostics/04_complexity.txt 2>&1
+uv tool run radon cc hoid/ -s -a > diagnostics/04_complexity.txt 2>&1
 
 # 6. Type verification & Circular Imports
 echo "-> Running mypy (Types)..."
-uv tool run mypy llm_framework/ --ignore-missing-imports > diagnostics/05_type_errors.txt 2>&1 || true
+uv tool run mypy hoid/ --ignore-missing-imports > diagnostics/05_type_errors.txt 2>&1 || true
 
 # 7. Dependency Hygiene (Unused/Missing packages)
 echo "-> Running deptry (Dependencies)..."
@@ -32,7 +32,7 @@ uv tool run deptry . --no-ansi > diagnostics/06_dependencies.txt 2>&1 || true
 
 # 8. Runtime Dead Code Map
 echo "-> Running pytest coverage (Dead Code)..."
-uv run --with pytest-cov pytest --cov=llm_framework --cov-report=term-missing tests/unit > diagnostics/07_coverage.txt 2>&1 || true
+uv run --with pytest-cov pytest --cov=hoid --cov-report=term-missing tests/unit > diagnostics/07_coverage.txt 2>&1 || true
 
 echo "========================================"
 echo "Done! All diagnostic data saved to './diagnostics'."

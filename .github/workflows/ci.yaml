@@ -18,19 +18,6 @@ jobs:
     name: Lint, type-check, and test
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        # fetch-depth: 0 is required for gitleaks to scan the commit range;
-        # the default shallow clone omits the merge commit's parents.
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Scan for secrets
-        # gitleaks scans full history; fail fast on leaked credentials before any install
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:

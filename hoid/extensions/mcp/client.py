@@ -10,7 +10,7 @@ from typing import Any
 
 import httpx
 
-from llm_framework.core.observability import MCPEvent
+from hoid.core.observability import MCPEvent
 
 log = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ _PROTO_VERSION = "2025-03-26"
 _INIT_PARAMS = {
     "protocolVersion": _PROTO_VERSION,
     "capabilities": {},
-    "clientInfo": {"name": "llm-framework", "version": "1.0.0"},
+    "clientInfo": {"name": "hoid", "version": "1.0.0"},
 }
 
 

@@ -6,8 +6,8 @@ import sys
 from collections.abc import Callable
 from contextlib import AbstractAsyncContextManager, asynccontextmanager
 
-from llm_framework._optional import require as _require
-from llm_framework.core.tools import build_schema
+from hoid._optional import require as _require
+from hoid.core.tools import build_schema
 
 try:
     from fastapi import FastAPI, Request

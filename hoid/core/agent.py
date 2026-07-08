@@ -6,8 +6,8 @@ import json
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
-from llm_framework.core.observability import AgentStepEvent, TokenUsage
-from llm_framework.core.observability import emit as _obs_emit
+from hoid.core.observability import AgentStepEvent, TokenUsage
+from hoid.core.observability import emit as _obs_emit
 
 from .protocols import AuthContextProtocol, AuthGateProtocol, LLMClientProtocol
 
@@ -54,7 +54,7 @@ class Agent:
             approval_tools: Set of tool names that require approval. If `None`, every tool requires approval.
             auth_gate: An `AuthGate` instance that filters tool schemas and enforces access at execution time. `None` disables auth (all tools allowed).
             before_iteration_callback: Sync or async callable `(step: int, max_steps: int) -> None` invoked at the start of each ReAct iteration. Enables callers to mutate `max_steps` at runtime to extend or shorten the iteration limit without subclassing.
-            on_step: Optional callable receiving `AgentStepEvent` at each ReAct iteration. Fires in addition to the global observability hook. Use the global hook (`llm_framework.observability.set_hook()`) for typical observability wiring.
+            on_step: Optional callable receiving `AgentStepEvent` at each ReAct iteration. Fires in addition to the global observability hook. Use the global hook (`hoid.observability.set_hook()`) for typical observability wiring.
         """
         self.client = client
         self.max_steps = max_steps

@@ -8,7 +8,7 @@ try:
     from sqlite_vec import serialize_float32
 except ImportError as _e:
     raise ImportError(
-        "SqliteVecBackend requires the [rag] extra: pip install 'llm-framework[rag]'"
+        "SqliteVecBackend requires the [rag] extra: pip install 'hoid[rag]'"
     ) from _e
 
 

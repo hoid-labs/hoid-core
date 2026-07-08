@@ -6,8 +6,8 @@ from typing import Any
 
 import httpx
 
-from llm_framework._env import load_env
-from llm_framework.core.observability import (
+from hoid._env import load_env
+from hoid.core.observability import (
     EmbeddingEvent,
     LLMCallEvent,
     TokenUsage,

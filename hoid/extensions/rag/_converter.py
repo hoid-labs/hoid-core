@@ -6,7 +6,7 @@ from pathlib import Path
 
 import defusedxml.ElementTree as ET
 
-from llm_framework._optional import require as _require
+from hoid._optional import require as _require
 
 try:
     import pypdf

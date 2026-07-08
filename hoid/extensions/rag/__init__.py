@@ -5,11 +5,11 @@ import uuid
 from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
 
-from llm_framework._env import load_env
-from llm_framework._optional import require as _require
-from llm_framework.core.llm import LLMClient
-from llm_framework.core.observability import RAGEvent
-from llm_framework.core.protocols import EmbeddingClientProtocol
+from hoid._env import load_env
+from hoid._optional import require as _require
+from hoid.core.llm import LLMClient
+from hoid.core.observability import RAGEvent
+from hoid.core.protocols import EmbeddingClientProtocol
 
 from ._converter import to_markdown
 from ._filter import FilterValidationError as FilterValidationError
@@ -23,12 +23,12 @@ except ImportError:
     MarkdownSplitter = None  # type: ignore[misc,assignment]
 
 try:
-    from llm_framework.extensions.rag.vector_store.sqlite import SqliteVecBackend
+    from hoid.extensions.rag.vector_store.sqlite import SqliteVecBackend
 except ImportError:
     SqliteVecBackend = None  # type: ignore[misc,assignment]
 
 try:
-    from llm_framework.extensions.rag.vector_store.qdrant import QdrantBackend
+    from hoid.extensions.rag.vector_store.qdrant import QdrantBackend
 except ImportError:
     QdrantBackend = None  # type: ignore[misc,assignment]
 

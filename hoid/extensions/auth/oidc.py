@@ -10,7 +10,7 @@ from urllib.parse import urlencode
 
 import httpx
 
-from llm_framework._optional import require as _require
+from hoid._optional import require as _require
 
 from ._context import AuthContext
 

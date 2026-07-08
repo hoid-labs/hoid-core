@@ -3,7 +3,7 @@ requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
-name = "llm-framework"
+name = "hoid"
 dynamic = ["version"]
 description = "Minimal Python library for building LLM-powered agents with a low dependency footprint."
 readme = "README.md"
@@ -24,9 +24,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/iciouss/llm-framework-core"
-Documentation = "https://iciouss.github.io/llm-framework-core/"
-Issues = "https://github.com/iciouss/llm-framework-core/issues"
+Homepage = "https://github.com/hoid-labs/hoid-core"
+Documentation = "https://hoid-labs.github.io/hoid-core/"
+Issues = "https://github.com/hoid-labs/hoid-core/issues"
 
 [project.optional-dependencies]
 # Library extras — extend the core library; install only what you need
@@ -35,13 +35,13 @@ rag = ["pypdf>=6.12.2", "semantic-text-splitter>=0.30.1", "sqlite-vec>=0.1.9", "
 qdrant = ["qdrant-client>=1.17.1"]
 oidc = ["PyJWT[crypto]>=2.9.0"]
 # Full-featured library install; recommended for most users
-std = ["llm-framework[rag,oidc]"]
+std = ["hoid[rag,oidc]"]
 
 [tool.hatch.version]
 source = "vcs"
 
 [tool.hatch.build.targets.wheel]
-packages = ["llm_framework"]
+packages = ["hoid"]
 
 [dependency-groups]
 dev = [
@@ -63,7 +63,7 @@ line-length = 88
 # CI runs mypy on the library only; tests are exercised by pytest.
 # Missing stubs on third-party packages we don't control: ignore with overrides below.
 python_version = "3.13"
-files = ["llm_framework"]
+files = ["hoid"]
 
 [[tool.mypy.overrides]]
 # sqlite-vec is a C extension with no published stubs.

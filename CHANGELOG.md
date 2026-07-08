@@ -27,20 +27,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI workflow extended with `gitleaks` (full-history secret scan, runs first to fail fast), `bandit` (Python security scan), and `deptry` (declared-dep audit, scoped to library + tests). `bandit` and `deptry` added to the `dev` group via `uv add`.
 
 ### Changed
-- `Agent` and `Orchestrator` no longer accept an `on_event` callback. Subscribe via `llm_framework.observability.set_hook()` (global) or the per-instance `on_step` parameter.
+- **Renamed package from `llm-framework` to `hoid` for first PyPI publish.** All import paths change from `from llm_framework.X` to `from hoid.X`. Install becomes `uv pip install hoid[std]`. The MCP `clientInfo.name` sent to servers is now `"hoid"`. The PyPI distribution is `hoid`; consumers pinning the old GitHub Release URL must switch to `pip install hoid==X.Y.Z`.
+- `Agent` and `Orchestrator` no longer accept an `on_event` callback. Subscribe via `hoid.observability.set_hook()` (global) or the per-instance `on_step` parameter.
 - `Orchestrator.delegate()` no longer mutates sub-agent state at call time. Sub-agent events carry `delegated_to` in the payload instead.
 - `Agent.run()` docstring now documents the token accounting contract explicitly: `completion_tokens` is OpenAI-compatible (includes reasoning); `total_billable_tokens` is the actual bill.
 - All example scripts and integration tests migrated from the `on_event=...` pattern to the new hook pattern.
-- Observability primitives moved from `llm_framework.observability` to `llm_framework.core.observability`; the old path remains as a silent backward-compat re-export.
+- Observability primitives moved from `hoid.observability` to `hoid.core.observability`; the old path remains as a silent backward-compat re-export.
 - The internal `AgentEvent` TypedDict was removed from `core/agent.py`. The agent loop now constructs `AgentStepEvent` directly via a private helper, eliminating the dual event representation.
 - `pyproject.toml` now declares `classifiers`, `keywords`, and a `[project.urls]` block (Homepage, Documentation, Issues) so the package renders correctly on PyPI.
 
 ### Removed
-- `llm_framework.tools.*` and `llm_framework.mcp_servers.*`. The reference tool implementations and MCP-server entry-point scripts now live in `examples/tools/` and `examples/mcp_servers/`. The `knowledge-server` and `memory-server` console scripts moved to the `examples` project — run them via `cd examples && uv run <server>`. The `[server]` extra was removed (`uvicorn` is no longer a library dependency; it ships transitively via `examples/`).
+- `hoid.tools.*` and `hoid.mcp_servers.*`. The reference tool implementations and MCP-server entry-point scripts now live in `examples/tools/` and `examples/mcp_servers/`. The `knowledge-server` and `memory-server` console scripts moved to the `examples` project — run them via `cd examples && uv run <server>`. The `[server]` extra was removed (`uvicorn` is no longer a library dependency; it ships transitively via `examples/`).
 
 
 ### Fixed
 - Token accounting no longer double-counts `reasoning_tokens` as a separate billable quantity. Consumers reading `prompt_tokens + completion_tokens + reasoning_tokens` were being charged twice for reasoning tokens; the new `total_billable_tokens` field gives the correct sum.
 - Lazy `import dataclasses` inside `observability._attach_ctx` hoisted to the module-level imports.
 
-[Unreleased]: https://github.com/moniente/llm-framework/compare/v0.0.0...HEAD
+[Unreleased]: https://github.com/hoid-labs/hoid-core/compare/v0.0.0...HEAD

@@ -1,4 +1,4 @@
-from llm_framework.core import (
+from hoid.core import (
     Agent,
     HistoryBuffer,
     LLMClient,

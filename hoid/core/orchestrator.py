@@ -3,7 +3,7 @@ from __future__ import annotations
 import contextlib
 from typing import Any
 
-from llm_framework.core.observability import OrchestratorEvent, emit
+from hoid.core.observability import OrchestratorEvent, emit
 
 from .agent import Agent
 from .history import HistoryBuffer

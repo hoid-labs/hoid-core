@@ -3,7 +3,7 @@ import json
 import os
 from pathlib import Path
 
-from llm_framework._env import load_env
+from hoid._env import load_env
 
 
 class MemoryStore:

@@ -53,7 +53,7 @@ class ObservabilityContext:
 
 
 _context_var: ContextVar[ObservabilityContext | None] = ContextVar(
-    "llm_framework_observability_context", default=None
+    "hoid_observability_context", default=None
 )
 
 

@@ -24,6 +24,6 @@ def require[T](name: str, obj: T | None) -> T:
         extra = EXTRAS_MAP.get(name, name)
         raise ImportError(
             f"'{name}' is required but not installed. "
-            f"Install it with: uv pip install 'llm-framework[{extra}]'"
+            f"Install it with: uv pip install 'hoid[{extra}]'"
         )
     return obj

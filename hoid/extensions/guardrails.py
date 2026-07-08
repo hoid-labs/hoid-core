@@ -5,7 +5,7 @@ from typing import Any
 
 import httpx
 
-from llm_framework.core.observability import GuardrailEvent
+from hoid.core.observability import GuardrailEvent
 
 
 class GuardrailBlockedError(ValueError):

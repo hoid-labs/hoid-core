@@ -14,7 +14,7 @@ try:
 except ImportError as _e:
     raise ImportError(
         "QdrantBackend requires the [qdrant] extra: "
-        "uv pip install 'llm-framework[qdrant]'"
+        "uv pip install 'hoid[qdrant]'"
     ) from _e
 
 

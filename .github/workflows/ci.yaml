@@ -44,19 +44,19 @@ jobs:
         run: uv sync --all-extras --group dev
 
       - name: Lint with ruff
-        run: uv run ruff check llm_framework tests
+        run: uv run ruff check hoid tests
 
       - name: Scan with bandit
         # Default thresholds: review flagged 6 low-confidence findings as informational, none medium/high
-        run: uv run bandit -r llm_framework
+        run: uv run bandit -r hoid
 
       # - name: Type-check with mypy
-      #   run: uv run mypy llm_framework
+      #   run: uv run mypy hoid
 
       # - name: Check dependencies with deptry
       #   # Scoped to library + tests; examples/ and docs/ have their own dep trees
-      #   run: uv run deptry llm_framework tests
+      #   run: uv run deptry hoid tests
 
       - name: Run unit tests
         # unit + packaging only; integration tests need a live LLM endpoint and are run on demand
-        run: uv run pytest tests/unit tests/test_packaging.py --cov=llm_framework --cov-report=term-missing
+        run: uv run pytest tests/unit tests/test_packaging.py --cov=hoid --cov-report=term-missing

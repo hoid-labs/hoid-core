@@ -9,7 +9,7 @@ No agents, no tools, no framework abstractions — just the HTTP call.
 
 import asyncio
 
-from llm_framework.core import LLMClient
+from hoid.core import LLMClient
 
 
 async def main():

@@ -20,12 +20,12 @@ try:
         Range,
     )
 
-    from llm_framework.extensions.rag.vector_store.qdrant import _to_qdrant_filter
+    from hoid.extensions.rag.vector_store.qdrant import _to_qdrant_filter
 except ImportError:
     _to_qdrant_filter = None  # type: ignore[assignment]
 
 try:
-    from llm_framework.extensions.rag.vector_store.qdrant import QdrantBackend
+    from hoid.extensions.rag.vector_store.qdrant import QdrantBackend
 except ImportError:
     QdrantBackend = None  # type: ignore[assignment]
 

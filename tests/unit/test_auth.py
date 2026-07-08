@@ -3,9 +3,9 @@ import pathlib
 import pprint
 import tempfile
 
-from llm_framework.core import Agent
-from llm_framework.core.tools import tool
-from llm_framework.extensions.auth import (
+from hoid.core import Agent
+from hoid.core.tools import tool
+from hoid.extensions.auth import (
     AuthContext,
     AuthGate,
     FilePolicyBackend,

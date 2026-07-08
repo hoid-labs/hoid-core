@@ -3,8 +3,8 @@ import pprint
 
 import pytest
 
-from llm_framework.core import Agent
-from llm_framework.core.tools import tool
+from hoid.core import Agent
+from hoid.core.tools import tool
 
 
 @tool

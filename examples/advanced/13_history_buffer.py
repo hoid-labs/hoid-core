@@ -10,8 +10,8 @@ New here: HistoryBuffer, prior_messages in agent.run().
 
 import asyncio
 
-from llm_framework.core import Agent, HistoryBuffer, LLMClient
-from llm_framework.observability import set_hook
+from hoid.core import Agent, HistoryBuffer, LLMClient
+from hoid.observability import set_hook
 
 
 class ShowEvent:

@@ -23,9 +23,9 @@ from examples.tools import (
     read_file,
     write_file,
 )
-from llm_framework.core import Agent, HistoryBuffer, LLMClient
-from llm_framework.extensions import MCPClient, MCPManager
-from llm_framework.extensions.guardrails import block_keywords, llm_guard, strip_pii
+from hoid.core import Agent, HistoryBuffer, LLMClient
+from hoid.extensions import MCPClient, MCPManager
+from hoid.extensions.guardrails import block_keywords, llm_guard, strip_pii
 
 # --------------------------------------------------------------------------- #
 # ANSI codes — no external deps

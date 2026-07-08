@@ -16,9 +16,9 @@ import asyncio
 import json
 from pathlib import Path
 
-from llm_framework.core import Agent, LLMClient
-from llm_framework.extensions import MCPClient, MCPManager
-from llm_framework.observability import set_hook
+from hoid.core import Agent, LLMClient
+from hoid.extensions import MCPClient, MCPManager
+from hoid.observability import set_hook
 
 KNOWLEDGE_SERVER = str(
     Path(__file__).parent.parent
@@ -74,7 +74,7 @@ async def main():
 
         print("\n=== Step 2: query ===")
         result = await agent.run(
-            "What optional extras does the llm-framework provide and what does each one add?"
+            "What optional extras does the hoid provide and what does each one add?"
         )
 
         print("\n--- ANSWER ---")

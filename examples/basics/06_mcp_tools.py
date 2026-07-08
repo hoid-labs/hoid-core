@@ -12,9 +12,9 @@ import asyncio
 import json
 from pathlib import Path
 
-from llm_framework.core import Agent, LLMClient
-from llm_framework.extensions import MCPClient, MCPManager
-from llm_framework.observability import set_hook
+from hoid.core import Agent, LLMClient
+from hoid.extensions import MCPClient, MCPManager
+from hoid.observability import set_hook
 
 ROOT = Path(__file__).parent.parent.parent
 EXAMPLES = Path(__file__).parent.parent

@@ -1,6 +1,6 @@
 import pytest
 
-from llm_framework.extensions.rag._filter import (
+from hoid.extensions.rag._filter import (
     SUPPORTED_OPERATORS,
     FilterValidationError,
     normalize_filter,

@@ -1,6 +1,6 @@
 import pytest
 
-from llm_framework._optional import EXTRAS_MAP, require
+from hoid._optional import EXTRAS_MAP, require
 
 
 def test_require_returns_object_unchanged():

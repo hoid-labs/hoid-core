@@ -1,6 +1,6 @@
 import pprint
 
-from llm_framework.core import HistoryBuffer
+from hoid.core import HistoryBuffer
 
 
 def _user(text):

@@ -2,7 +2,7 @@ import io
 import json
 import zipfile
 
-from llm_framework.extensions.rag._converter import to_markdown
+from hoid.extensions.rag._converter import to_markdown
 
 
 def test_plain_text(tmp_path):

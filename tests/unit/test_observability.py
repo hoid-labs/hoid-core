@@ -3,7 +3,7 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from llm_framework.observability import (
+from hoid.observability import (
     AgentStepEvent,
     EmbeddingEvent,
     Event,
@@ -236,7 +236,7 @@ def clear_contexts():
 
 
 def _context_var_reset():
-    from llm_framework.observability import _context_var
+    from hoid.observability import _context_var
 
     _context_var.set(None)
 

@@ -3,7 +3,7 @@ import pprint
 import pytest
 
 try:
-    from llm_framework.extensions.rag.vector_store.sqlite import SqliteVecBackend
+    from hoid.extensions.rag.vector_store.sqlite import SqliteVecBackend
 except ImportError:
     SqliteVecBackend = None
 

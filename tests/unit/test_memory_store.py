@@ -1,4 +1,4 @@
-from llm_framework.extensions.memory import MemoryStore
+from hoid.extensions.memory import MemoryStore
 
 
 async def test_save_and_load_roundtrip():

@@ -1,6 +1,6 @@
 import pytest
 
-from llm_framework.observability import clear_hook, set_hook
+from hoid.observability import clear_hook, set_hook
 
 
 class MockLLMClient:

@@ -11,8 +11,8 @@ New here: @tool decorator, tools=[...] on Agent.
 import asyncio
 import json
 
-from llm_framework.core import Agent, LLMClient, tool
-from llm_framework.observability import set_hook
+from hoid.core import Agent, LLMClient, tool
+from hoid.observability import set_hook
 
 
 # @tool reads the type hints and docstring to generate the JSON schema

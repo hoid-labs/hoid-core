@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from llm_framework.core import LLMClient
+from hoid.core import LLMClient
 
 pytestmark = pytest.mark.integration
 

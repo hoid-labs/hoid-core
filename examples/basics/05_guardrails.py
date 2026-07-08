@@ -14,8 +14,8 @@ New here: input_guards, output_guards, block_keywords, strip_pii, llm_guard.
 
 import asyncio
 
-from llm_framework.core import Agent, LLMClient, tool
-from llm_framework.extensions.guardrails import llm_guard, strip_pii
+from hoid.core import Agent, LLMClient, tool
+from hoid.extensions.guardrails import llm_guard, strip_pii
 
 
 @tool

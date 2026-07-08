@@ -3,14 +3,14 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "llm-framework-examples"
+name = "hoid-examples"
 version = "0.0.0"
 requires-python = ">=3.13"
 dependencies = [
     "fastapi>=0.136.1",
     "uvicorn>=0.46.0",
     "websockets>=16.0",
-    "llm-framework[std]",
+    "hoid[std]",
 ]
 
 [project.scripts]
@@ -21,4 +21,4 @@ memory-server = "mcp_servers.memory_server:main"
 packages = ["tools", "mcp_servers", "chats", "advanced", "basics", "specialized_agents"]
 
 [tool.uv.sources]
-llm-framework = { path = ".." }
+hoid = { path = ".." }

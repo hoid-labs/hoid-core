@@ -15,8 +15,8 @@ New here: @cached_tool decorator.
 import asyncio
 import json
 
-from llm_framework.core import Agent, LLMClient, cached_tool
-from llm_framework.observability import set_hook
+from hoid.core import Agent, LLMClient, cached_tool
+from hoid.observability import set_hook
 
 _call_count = {"get_pi": 0, "get_greeting": 0}
 

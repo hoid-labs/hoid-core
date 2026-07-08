@@ -11,14 +11,14 @@ New here: AuthGate, MemoryPolicyBackend, StaticAuthProvider, AuthContext,
 import asyncio
 
 from examples.tools import add_numbers, fetch_url, get_current_datetime, write_file
-from llm_framework.core import Agent, LLMClient
-from llm_framework.extensions.auth import (
+from hoid.core import Agent, LLMClient
+from hoid.extensions.auth import (
     AuthContext,
     AuthGate,
     MemoryPolicyBackend,
     StaticAuthProvider,
 )
-from llm_framework.observability import set_hook
+from hoid.observability import set_hook
 
 POLICY = {
     "roles": {

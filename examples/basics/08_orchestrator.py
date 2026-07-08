@@ -13,8 +13,8 @@ import asyncio
 import json
 from pathlib import Path
 
-from llm_framework.core import Agent, LLMClient, Orchestrator, tool
-from llm_framework.observability import set_hook
+from hoid.core import Agent, LLMClient, Orchestrator, tool
+from hoid.observability import set_hook
 
 
 # --- Sub-agent A: knows about the filesystem ---

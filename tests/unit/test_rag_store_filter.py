@@ -11,8 +11,8 @@ from __future__ import annotations
 import pytest
 
 try:
-    from llm_framework.extensions.rag import RAGStore
-    from llm_framework.extensions.rag.vector_store.sqlite import SqliteVecBackend
+    from hoid.extensions.rag import RAGStore
+    from hoid.extensions.rag.vector_store.sqlite import SqliteVecBackend
 except ImportError:
     RAGStore = None  # type: ignore[assignment]
     SqliteVecBackend = None  # type: ignore[assignment]
@@ -22,7 +22,7 @@ pytestmark = pytest.mark.skipif(
     reason="requires [rag] extra",
 )
 
-from llm_framework.extensions.rag._filter import (  # noqa: E402
+from hoid.extensions.rag._filter import (  # noqa: E402
     FilterValidationError,
     normalize_filter,
 )

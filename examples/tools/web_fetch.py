@@ -6,7 +6,7 @@ import urllib.parse
 
 import httpx
 
-from llm_framework.core import tool
+from hoid.core import tool
 
 # cap to avoid flooding context
 _MAX_CHARS = 12_000

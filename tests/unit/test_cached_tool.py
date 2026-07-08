@@ -1,4 +1,4 @@
-from llm_framework.core import cached_tool
+from hoid.core import cached_tool
 
 
 def test_sync_cached_calls_fn_once():

@@ -4,8 +4,8 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 
-from llm_framework.extensions.mcp import MCPContext, MCPServer
-from llm_framework.extensions.memory import MemoryStore
+from hoid.extensions.mcp import MCPContext, MCPServer
+from hoid.extensions.memory import MemoryStore
 
 
 @asynccontextmanager

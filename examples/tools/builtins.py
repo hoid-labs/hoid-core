@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from llm_framework.core.tools import tool
+from hoid.core.tools import tool
 
 
 @tool

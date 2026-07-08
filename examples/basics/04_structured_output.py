@@ -12,7 +12,7 @@ New here: response_format, json_schema, no agent loop.
 import asyncio
 import json
 
-from llm_framework.core import LLMClient
+from hoid.core import LLMClient
 
 # Define the exact shape you expect back. The LLM must conform to it.
 SCHEMA = {

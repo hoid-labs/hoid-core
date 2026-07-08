@@ -1,6 +1,6 @@
 import pathlib
 
-from llm_framework.core import tool
+from hoid.core import tool
 
 _SAFE_ROOT = pathlib.Path.home()
 _MAX_CHARS = 20_000

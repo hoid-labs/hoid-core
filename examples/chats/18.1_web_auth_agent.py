@@ -52,13 +52,13 @@ from examples.tools import (
     read_file,
     write_file,
 )
-from llm_framework.core import Agent, HistoryBuffer, LLMClient
-from llm_framework.extensions.auth import (
+from hoid.core import Agent, HistoryBuffer, LLMClient
+from hoid.extensions.auth import (
     AuthContext,
     AuthGate,
     MemoryPolicyBackend,
 )
-from llm_framework.extensions.guardrails import block_keywords, llm_guard, strip_pii
+from hoid.extensions.guardrails import block_keywords, llm_guard, strip_pii
 
 # --------------------------------------------------------------------------- #
 # Users, policy, gate

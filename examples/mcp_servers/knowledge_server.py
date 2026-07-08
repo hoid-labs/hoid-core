@@ -5,8 +5,8 @@ from pathlib import Path
 
 import uvicorn
 
-from llm_framework.extensions.mcp import MCPContext, MCPServer
-from llm_framework.extensions.rag import RAGStore, backend_from_env
+from hoid.extensions.mcp import MCPContext, MCPServer
+from hoid.extensions.rag import RAGStore, backend_from_env
 
 _MAX_CHARS = 8_000
 

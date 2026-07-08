@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from llm_framework.extensions.guardrails import block_keywords, llm_guard, strip_pii
+from hoid.extensions.guardrails import block_keywords, llm_guard, strip_pii
 
 # --- block_keywords ---
 

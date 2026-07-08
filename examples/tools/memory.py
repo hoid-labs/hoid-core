@@ -1,5 +1,5 @@
-from llm_framework.core import tool
-from llm_framework.extensions.memory import MemoryStore
+from hoid.core import tool
+from hoid.extensions.memory import MemoryStore
 
 
 def make_memory_tools(store: MemoryStore) -> list:

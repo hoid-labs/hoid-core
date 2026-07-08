@@ -6,7 +6,7 @@ ROOT = Path(__file__).parent.parent
 
 def test_extras_map_matches_pyproject() -> None:
     """Every extra name referenced in _optional.EXTRAS_MAP must exist in pyproject.toml."""
-    from llm_framework._optional import EXTRAS_MAP
+    from hoid._optional import EXTRAS_MAP
 
     with open(ROOT / "pyproject.toml", "rb") as f:
         data = tomllib.load(f)

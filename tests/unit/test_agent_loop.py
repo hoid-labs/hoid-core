@@ -5,8 +5,8 @@ from __future__ import annotations
 import json
 import pprint
 
-from llm_framework.core import Agent
-from llm_framework.core.tools import tool
+from hoid.core import Agent
+from hoid.core.tools import tool
 
 
 @tool

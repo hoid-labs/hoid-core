@@ -1,7 +1,7 @@
 import pprint
 from typing import Literal
 
-from llm_framework.core.tools import build_schema, tool
+from hoid.core.tools import build_schema, tool
 
 # --- build_schema type coverage ---
 

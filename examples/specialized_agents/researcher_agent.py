@@ -5,8 +5,8 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from examples.tools.web_fetch import fetch_url
-from llm_framework.core import Agent, LLMClient
-from llm_framework.extensions.mcp import MCPContext, MCPServer
+from hoid.core import Agent, LLMClient
+from hoid.extensions.mcp import MCPContext, MCPServer
 
 _MAX_CHARS = 8_000
 
@@ -62,7 +62,7 @@ async def delegate_to_researcher(task: str, ctx: MCPContext) -> str:
         ),
         on_step=lambda e: _log.debug(json.dumps(e, default=str)),
     )
-    from llm_framework.observability import set_hook
+    from hoid.observability import set_hook
 
     set_hook(JsonLogHook())
     result = await agent.run(task)

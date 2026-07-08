@@ -29,7 +29,7 @@ import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from llm_framework.extensions.mcp import MCPContext, MCPServer
+from hoid.extensions.mcp import MCPContext, MCPServer
 
 # --- Simulated in-memory "database" that lifespan manages ---
 

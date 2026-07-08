@@ -18,6 +18,12 @@
 #        - otherwise -> patch
 #   3. Skip markers in any new commit body suppress tagging entirely:
 #        [skip release] [skip ci]
+#   4. Library-change gate: a computed bump is suppressed unless the diff
+#      since the last tag touches the package itself (hoid/ or
+#      pyproject.toml — the only paths the wheel ships). Pushes that only
+#      change workflows, justfile, docs, tests-without-code, or examples
+#      do not produce a tag, regardless of the conventional-commit type.
+#      Prevents patch bumps like 1.0.0 -> 1.0.1 for infrastructure churn.
 #
 # Idempotent: if the computed tag already exists on the remote, exits cleanly.
 
@@ -70,6 +76,29 @@ if [ -z "$bump" ]; then
     bump="minor"
   else
     bump="patch"
+  fi
+fi
+
+# Library-change gate: even when the conventional-commit analysis picks
+# a bump, suppress it unless the diff since the last tag actually
+# touches the package. hoid/ holds the wheel contents (per
+# [tool.hatch.build.targets.wheel] packages); pyproject.toml is the only
+# other path that affects the published artifact. Changes to .github/,
+# justfile, docs/, tests/, examples/, CLAUDE.md, etc. are infrastructure
+# and don't deserve a release tag.
+# The empty-tree SHA is git's intrinsic "tree with no files" object —
+# the same constant in every repository. Used here for the first-ever
+# tag (no prior v* exists) so the diff covers all of history.
+EMPTY_TREE="4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+if [ -n "$bump" ]; then
+  if [ "$latest" = "0.0.0" ]; then
+    since="$EMPTY_TREE"
+  else
+    since="v${latest}"
+  fi
+  if [ -z "$(git diff --name-only "${since}..HEAD" -- 'hoid/' 'pyproject.toml')" ]; then
+    echo "No library changes in ${since}..HEAD; skipping tag."
+    exit 0
   fi
 fi
 

@@ -289,6 +289,12 @@ class Agent:
         total_reasoning_tokens = 0
         context_tokens = 0
 
+        # Snapshot schemas before the loop; self.schemas may be mutated mid-run
+        # (e.g. cleared by iteration-warning wrap-up callback). The snapshot is
+        # used to satisfy backends that require tool schemas whenever the message
+        # history contains tool-use content, even when no new calls are desired.
+        initial_schemas: list[dict[str, object]] = list(self.schemas)
+
         step = 0
         while step < self.max_steps:
             if self.before_iteration_callback:
@@ -297,9 +303,23 @@ class Agent:
                     await cb_result
             visible_schemas = self._apply_auth_filter(self.schemas, auth_context)
 
+            # When schemas were cleared mid-run but the message history already
+            # contains tool-call or tool-result content, some backends (e.g.
+            # Bedrock) reject the request unless tool schemas are present.
+            # Re-supply the initial snapshot with tool_choice="none" so the
+            # backend can resolve the tool-result context while the model is
+            # instructed not to invoke any further tools.
+            has_prior_tool_content = not visible_schemas and initial_schemas and any(
+                msg.get("role") == "tool" or bool(msg.get("tool_calls"))
+                for msg in messages
+            )
+            tools_param = visible_schemas or (list(initial_schemas) if has_prior_tool_content else None)
+            tool_choice_param = "none" if has_prior_tool_content else None
+
             response = await self.client.chat_completions(
                 messages,
-                tools=visible_schemas or None,
+                tools=tools_param,
+                tool_choice=tool_choice_param,
                 max_tokens=self.max_tokens,
                 temperature=self.temperature,
                 max_retries=self.max_retries,

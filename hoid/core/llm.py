@@ -94,6 +94,7 @@ class LLMClient:
         self,
         messages: list[dict[str, Any]],
         tools: list[dict[str, Any]] | None = None,
+        tool_choice: str | None = None,
         temperature: float = 0.7,
         max_tokens: int = 1024,
         max_retries: int = 3,
@@ -104,6 +105,7 @@ class LLMClient:
         Args:
             messages: Conversation history in OpenAI message format.
             tools: Optional list of JSON function schemas to expose to the model.
+            tool_choice: Optional tool selection hint (e.g. "none", "auto", "required").
             temperature: Sampling temperature (default 0.7); use 0.0 for deterministic output.
             max_tokens: Maximum tokens in the response.
             max_retries: Retry attempts on 429/5xx errors with exponential backoff.
@@ -120,6 +122,8 @@ class LLMClient:
         }
         if tools:
             payload["tools"] = tools
+            if tool_choice:
+                payload["tool_choice"] = tool_choice
         if response_format:
             payload["response_format"] = response_format
 

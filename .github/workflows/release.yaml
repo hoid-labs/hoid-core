@@ -84,7 +84,7 @@ jobs:
           name: dist
           path: dist
 
-      - uses: pypa/gh-action-pypi-publish@v1.10.3
+      - uses: pypa/gh-action-pypi-publish@v1.14.1
         # First publish: token-based (PYPI_API_TOKEN secret).
         # After the project is claimed on PyPI and trusted publishing is
         # configured there, revert this to the no-`with:` form and delete

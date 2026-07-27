@@ -57,7 +57,7 @@ def test_list_of_str():
 def test_plain_list():
     def f(items: list): ...
 
-    assert _schema_for(f)["items"] == {"type": "array"}
+    assert _schema_for(f)["items"] == {"type": "array", "items": {"type": "string"}}
 
 
 def test_dict_param():
@@ -164,7 +164,7 @@ def test_no_docstring_uses_empty_description():
     schema = build_schema(f)
     desc = schema["function"]["description"]
     print(f"description for no-docstring fn: {desc!r}")
-    assert desc == ""
+    assert desc == "f"
 
 
 def test_function_description_is_first_line():

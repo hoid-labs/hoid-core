@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # Compute the next version tag and push it.
-# Usage: auto-tag.sh <ref-name>
+# Usage: auto-tag.sh <ref-name> [before-sha] [after-sha]
+#
+# before-sha/after-sha are the push event's before/after SHAs (github.event.before
+# / github.event.after). They scope the skip-marker check to only the commits
+# introduced by this push. Omit them (or pass empty strings) to fall back to
+# just the tip commit, e.g. for a manual/workflow_dispatch run.
 #
 # Tag format: vX.Y.Z on main, derived from the previous v* tag plus the
 # conventional-commit type of new commits since.
@@ -16,8 +21,12 @@
 #        - any subject ending in `!:` or any body containing `BREAKING CHANGE:` -> major
 #        - any subject matching `^feat:` or `^feat(...):` -> minor
 #        - otherwise -> patch
-#   3. Skip markers in any new commit body suppress tagging entirely:
+#   3. Skip markers in a commit body from *this push* suppress tagging for
+#      this push only:
 #        [skip release] [skip ci]
+#      Unlike the bump computation, this check does NOT look back to the last
+#      tag — otherwise a single skip-marked push would keep blocking every
+#      later push forever, since a skipped push never advances the tag.
 #   4. Library-change gate: a computed bump is suppressed unless the diff
 #      since the last tag touches the package itself (hoid/ or
 #      pyproject.toml — the only paths the wheel ships). Pushes that only
@@ -30,6 +39,8 @@
 set -euo pipefail
 
 ref_name="${1:?ref name required}"
+before_sha="${2:-}"
+after_sha="${3:-}"
 
 if [ "$ref_name" != "main" ]; then
   echo "Ref ${ref_name} is not main; skipping tag."
@@ -51,9 +62,20 @@ else
   commits=$(git log "v${latest}..HEAD" --pretty=format:"%s%n%b---")
 fi
 
-# Skip markers win outright.
-if echo "$commits" | grep -qE '\[skip release\]|\[skip ci\]'; then
-  echo "Skip marker found in a new commit body; not tagging."
+# Commits introduced by *this push only*, for the skip-marker check. Falls
+# back to just the tip commit when before/after aren't available (e.g. a
+# manual run) or when before is the all-zero SHA (branch/ref just created).
+zero_sha="0000000000000000000000000000000000000000"
+if [ -n "$before_sha" ] && [ -n "$after_sha" ] && [ "$before_sha" != "$zero_sha" ]; then
+  push_commits=$(git log "${before_sha}..${after_sha}" --pretty=format:"%s%n%b---")
+else
+  push_commits=$(git log -1 --pretty=format:"%s%n%b---" HEAD)
+fi
+
+# Skip markers only suppress tagging for the push that introduced them, so
+# they don't permanently block every later push once the tag stops advancing.
+if echo "$push_commits" | grep -qE '\[skip release\]|\[skip ci\]'; then
+  echo "Skip marker found in this push's commit body; not tagging."
   exit 0
 fi
 

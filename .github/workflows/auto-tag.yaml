@@ -24,4 +24,4 @@ jobs:
       - name: Compute and push version tag
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bash .github/scripts/auto-tag.sh "${{ github.ref_name }}"
+        run: bash .github/scripts/auto-tag.sh "${{ github.ref_name }}" "${{ github.event.before }}" "${{ github.event.after }}"

@@ -25,12 +25,17 @@ def _type_to_schema(t):
         args = [a for a in typing.get_args(t) if a is not type(None)]
         return _type_to_schema(args[0]) if len(args) == 1 else {"type": "string"}
 
+    if t is list:
+        # bare `list` with no element type — default to string items so the
+        # schema stays valid for proxies that reject array without items
+        return {"type": "array", "items": {"type": "string"}}
+
     if origin is list:
         args = typing.get_args(t)
         return (
             {"type": "array", "items": _type_to_schema(args[0])}
             if args
-            else {"type": "array"}
+            else {"type": "array", "items": {"type": "string"}}
         )
 
     if origin is dict:
@@ -93,7 +98,9 @@ def build_schema(fn):
         "type": "function",
         "function": {
             "name": fn.__name__,
-            "description": desc,
+            # Some LLM providers reject empty description strings with 400;
+            # fall back to the function name so the schema is always valid.
+            "description": desc or fn.__name__,
             "parameters": {"type": "object", "properties": props, "required": required},
         },
     }

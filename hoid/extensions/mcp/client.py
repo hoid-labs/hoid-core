@@ -287,7 +287,9 @@ class MCPClient:
             "type": "function",
             "function": {
                 "name": mcp_tool["name"],
-                "description": clean_desc,
+                # Some LLM providers reject empty description strings with 400;
+                # fall back to the tool name so the schema is always valid.
+                "description": clean_desc or mcp_tool["name"],
                 "parameters": schema,
             },
         }
